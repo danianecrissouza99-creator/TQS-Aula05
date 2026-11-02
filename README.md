@@ -11,15 +11,13 @@ O enunciado original, tal como o professor o deu, está no ficheiro `ENUNCIADO.m
 
 ## Estrutura
 
-```
-src/     o código testado
-tests/   os testes
-```
-
-- `src/Carrinho.php` - a classe do carrinho de compras
-- `src/ValidadorPasse.php` - o validador de palavra-passe, criado no P5.3
-- `tests/CarrinhoTest.php` - os testes do P5.1 e do P5.2
-- `tests/ValidadorPasseTest.php` - os testes do P5.3
+| Ficheiro | O que tem |
+| --- | --- |
+| `src/Carrinho.php` | A classe do carrinho de compras (com o desconto de estudante que acrescentei) |
+| `src/ValidadorPasse.php` | O validador de palavra-passe, criado em TDD no P5.3 |
+| `tests/CarrinhoTest.php` | Os testes do P5.1 e do P5.2 |
+| `tests/ValidadorPasseTest.php` | Os testes do P5.3 |
+| `ENUNCIADO.md` | O enunciado original da aula |
 
 ## Preparar e correr
 
@@ -43,25 +41,51 @@ Este projeto não tem `phpunit.xml`, por isso é preciso pôr sempre `tests` no 
 
 ## P5.1 - Primeiros testes
 
-**O que era pedido:** escrever pelo menos 8 testes à classe `Carrinho`: o total com um, dois e três artigos, o número de artigos, se o carrinho novo está vazio e se deixa de estar quando se adiciona um artigo. Cada teste devia seguir o padrão Arrange, Act, Assert (preparar, executar, verificar), ter um nome que explique o que verifica e usar `assertSame`.
+**O que era pedido:** escrever pelo menos 8 testes à classe `Carrinho`: o total com um, dois e três artigos, o número de artigos, o carrinho vazio e não vazio, e o desconto de estudante para idades dentro e fora do intervalo, incluindo os valores fronteira 18 e 25. Cada teste devia seguir o padrão Arrange, Act, Assert (preparar, executar, verificar), ter um nome que explique o que verifica e usar `assertSame`.
 
-**O que fiz:** escrevi 9 testes para estes casos. O primeiro, `testTotalVazioEhZero`, é o ponto de partida do slide, escrito como lá aparece. Usei o `setUp()` para cada teste começar com um carrinho novo, assim nenhum teste depende do que outro deixou.
+**O que fiz:** usei o `setUp()` para cada teste começar com um carrinho novo, assim nenhum teste depende do que outro deixou. Antes de escrever cada valor esperado fiz a conta à mão.
 
-Antes de escrever cada valor esperado fiz a conta à mão. Por exemplo, no teste com três artigos: (10 x 2) + (5 x 1) + (3 x 4) = 20 + 5 + 12 = 37.
+| Teste | O que verifica | Conta |
+| --- | --- | --- |
+| `testTotalVazioEhZero` | Carrinho vazio tem total 0 (ponto de partida do slide) | 0 |
+| `testTotal_ComUmArtigo_...` | Total com um artigo | 10 x 2 = 20 |
+| `testTotal_ComDoisArtigos_...` | Total com dois artigos | 20 + 5 = 25 |
+| `testTotal_ComTresArtigos_...` | Total com três artigos | 20 + 5 + 12 = 37 |
+| `testNumeroDeArtigos_ComDoisArtigos_...` | Dois artigos adicionados | 2 |
+| `testNumeroDeArtigos_ComQuantidadeCinco_...` | A quantidade não conta como artigos | 1 |
+| `testVazio_CarrinhoNovo_...` | Carrinho novo está vazio | true |
+| `testVazio_ComUmArtigo_...` | Com um artigo já não está vazio | false |
+| `testAdicionar_QuantidadeVinte_...` | Quantidade 20, o máximo, é aceite | 3 x 20 = 60 |
 
-Também acrescentei um teste com quantidade 20, porque é o máximo permitido e queria confirmar que é aceite.
+Nos testes que escrevi de raiz, os nomes seguem o formato sugerido nos slides, `testOQueSeTesta_Condicao_ResultadoEsperado`. O exemplo do slide ficou com o nome original.
 
-Nos testes que escrevi de raiz, os nomes seguem o formato sugerido nos slides, `testOQueSeTesta_Condicao_ResultadoEsperado`, por exemplo `testTotal_ComDoisArtigos_DevolveSomaDosArtigos`. Os exemplos dos slides ficaram com os nomes originais.
+**Desconto de estudante:** a classe `Carrinho` não tinha este método, por isso acrescentei `descontoEstudante()`. Devolve 10% entre os 18 e os 25 anos (inclusive) e 0% fora disso. Testei-o com um Data Provider, para cobrir os dois limites e os valores logo antes e logo depois:
 
-Nos slides da aula, o P5.1 pedia também o desconto de estudante para idades dentro e fora do intervalo (18 a 25 anos). A classe `Carrinho` não tinha esse método, por isso acrescentei `descontoEstudante()`, que devolve 10% entre os 18 e os 25 anos e 0% fora disso. Testei as idades 17, 18, 21, 25 e 26 com um Data Provider, para cobrir os dois limites e os valores logo antes e logo depois.
+| Caso | Idade | Desconto esperado |
+| --- | --- | --- |
+| menor de idade | 17 | 0% |
+| limite inferior | 18 | 10% |
+| no intervalo | 21 | 10% |
+| limite superior | 25 | 10% |
+| acima | 26 | 0% |
 
 ## P5.2 - Testar exceções
 
 **O que era pedido:** confirmar que o método `adicionar` recusa entradas inválidas com uma exceção: quantidade zero, quantidade acima de 20 e preço negativo. Em pelo menos um dos testes, devia verificar-se também a mensagem com `expectExceptionMessage`.
 
-**O que fiz:** escrevi 5 testes: um para cada um destes casos, mais um para o preço 0, que também não é permitido (o preço tem de ser maior que zero). Nos testes da quantidade acima de 20 e do preço negativo verifico a mensagem completa.
+**O que fiz:** escrevi 5 testes. Dois são os exemplos dos slides, escritos tal como o professor os mostrou.
 
-Dois destes testes são os exemplos dos slides, escritos tal como o professor os mostrou: `testQtZeroLevantaErro` (verificar que a exceção ocorre) e `testMensagemDoErro` (verificar também a mensagem). Este último, com quantidade 0, verifica só que a mensagem fala da `quantidade`. O `expectExceptionMessage` aceita apenas uma parte do texto, o que torna o teste menos frágil se a frase mudar um pouco.
+| Teste | Entrada | Verifica a mensagem? |
+| --- | --- | --- |
+| `testQtZeroLevantaErro` (slide) | quantidade 0 | Não |
+| `testMensagemDoErro` (slide) | quantidade 0 | Sim, só a palavra "quantidade" |
+| `testAdicionar_QuantidadeAcimaDeVinte_...` | quantidade 21 | Sim, a frase completa |
+| `testAdicionar_PrecoNegativo_...` | preço -5 | Sim, a frase completa |
+| `testAdicionar_PrecoZero_...` | preço 0 | Não |
+
+O teste do preço 0 não era pedido, mas acrescentei-o porque o preço tem de ser maior que zero e o 0 é exatamente o limite.
+
+O `testMensagemDoErro` mostra que o `expectExceptionMessage` aceita só uma parte do texto, o que torna o teste menos frágil se a frase mudar um pouco.
 
 O mais importante aqui foi a ordem: primeiro o `expectException` e só depois a chamada que deve dar erro. Se for ao contrário, a exceção acontece antes de o PHPUnit saber que a deve esperar, e o teste dá erro.
 
@@ -77,16 +101,41 @@ A ideia era fazer um requisito de cada vez: escrever o teste, vê-lo falhar (ver
 
 **Como correu:**
 
-1. Comecei pelo tamanho. Escrevi o teste para `'Ab1'` ser inválida e corri-o sem a classe existir. Deu erro, que era o esperado. Depois criei a classe só com `return strlen($passe) >= 8;` e o teste passou.
-2. A seguir escrevi o teste da maiúscula (`'abcdefg1'` tem de ser inválida). Falhou, porque o código só olhava para o tamanho. Acrescentei a verificação da maiúscula e passou.
-3. Fiz o mesmo com o dígito (`'Abcdefgh'` tem de ser inválida): primeiro falhou e, depois de acrescentar a verificação, passou.
-4. No refactor, passei o 8 para uma constante (`TAMANHO_MINIMO`) e deixei cada regra com o seu comentário. Os testes continuaram todos verdes, o que mostra que o comportamento não mudou.
+| Passo | O que fiz | Resultado |
+| --- | --- | --- |
+| Vermelho | Teste para `'Ab1'` ser inválida, sem a classe existir | Erro: a classe não existia |
+| Verde | Classe só com `return strlen($passe) >= 8;` | Passou |
+| Vermelho | Teste para `'abcdefg1'` (sem maiúscula) ser inválida | Falhou: o código só via o tamanho |
+| Verde | Acrescentei a verificação da maiúscula | Passou |
+| Vermelho | Teste para `'Abcdefgh'` (sem dígito) ser inválida | Falhou |
+| Verde | Acrescentei a verificação do dígito | Passou |
+| Refactor | Passei o 8 para a constante `TAMANHO_MINIMO` e comentei cada regra | Continuou tudo a passar |
 
-Também acrescentei um teste para uma palavra-passe que cumpre tudo (`'Segura2026'`) e um Data Provider com 7, 8 e 9 caracteres, que são os valores-limite do tamanho.
+O facto de os testes continuarem verdes depois do refactor mostra que o comportamento não mudou.
+
+No fim, os testes do validador ficaram assim:
+
+| Teste | Palavra-passe | Esperado |
+| --- | --- | --- |
+| `testValida_PasseCurta_...` | `Ab1` | inválida |
+| `testValida_SemMaiuscula_...` | `abcdefg1` | inválida |
+| `testValida_SemDigito_...` | `Abcdefgh` | inválida |
+| `testValida_CumpreTodasAsRegras_...` | `Segura2026` | válida |
+| Data Provider: 7 caracteres | `Abcdef1` | inválida |
+| Data Provider: 8 caracteres | `Abcdefg1` | válida |
+| Data Provider: 9 caracteres | `Abcdefgh1` | válida |
+
+O Data Provider serve para testar os valores-limite do tamanho (7, 8 e 9) com um só teste.
 
 ## Resultado
 
-Com `php phpunit --testdox tests` passam os 26 testes: 19 do `Carrinho` e 7 do `ValidadorPasse` (cada linha de um Data Provider conta como um teste).
+Com `php phpunit --testdox tests` passam os 26 testes (cada linha de um Data Provider conta como um teste):
+
+| Ficheiro | Testes |
+| --- | --- |
+| `CarrinhoTest.php` | 19 (14 do P5.1 e 5 do P5.2) |
+| `ValidadorPasseTest.php` | 7 |
+| **Total** | **26** |
 
 ```
 OK (26 tests, 29 assertions)
