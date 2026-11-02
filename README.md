@@ -1,122 +1,50 @@
-# TQS · Aula 5 — Testes Unitários com PHP
+# TQS - Aula 5: Testes Unitários com PHP
 
-Exercícios práticos da Aula 5 da unidade curricular **Testes e Qualidade de Software** (ISTEC · CTeSP em Desenvolvimento de Software · 2.º ano).
+Exercícios da Aula 5 de Testes e Qualidade de Software (ISTEC).
 
-O objetivo foi escrever uma suite de testes unitários com o **PHPUnit**, testar exceções e desenvolver uma classe nova com o ciclo **TDD** (vermelho, verde, refactor).
+Daniane Christyni Souza da Silva, n.º 2025055
 
-**Resultado final:** 25 testes a passar · `OK (25 tests, 27 assertions)`
+O enunciado original do professor está no ficheiro `ENUNCIADO.md`.
 
----
+## Como correr
 
-## Autora
-
-- **Nome:** Daniane Christyni Souza da Silva
-- **N.º de aluna:** 2025055
-- **Docente:** André Silva
-
----
-
-## Estrutura do projeto
+É preciso ter o PHPUnit na pasta do projeto:
 
 ```
-src/
-  Carrinho.php            classe Carrinho (total, artigos, vazio, desconto de estudante)
-  ValidadorPasse.php      classe criada em TDD (exercício P5.3)
-tests/
-  CarrinhoTest.php        testes dos exercícios P5.1 e P5.2
-  ValidadorPasseTest.php  testes do exercício P5.3
+php -r "copy('https://phar.phpunit.de/phpunit-11.phar', 'phpunit');"
 ```
 
----
+Depois:
 
-## Como correr os testes
+```
+php phpunit --testdox tests
+```
 
-1. Instalar o PHPUnit dentro da pasta do projeto (é um ficheiro só):
+Neste momento passam os 25 testes.
 
-   ```
-   php -r "copy('https://phar.phpunit.de/phpunit-11.phar', 'phpunit');"
-   php phpunit --version
-   ```
+## O que fiz
 
-2. Correr os testes:
+### P5.1 - Primeiros testes
 
-   ```
-   php phpunit tests                 # todos os testes
-   php phpunit --testdox tests       # cada teste mostrado como uma frase
-   php phpunit tests/CarrinhoTest.php
-   ```
+Escrevi testes para a classe `Carrinho`: o total com um, dois e três artigos, o número de artigos e se o carrinho está vazio ou não. Também testei a quantidade 20, que é o máximo permitido.
 
-> O ficheiro `phpunit` não está no repositório (está no `.gitignore`).
+O enunciado pedia ainda o desconto de estudante (18 a 25 anos), mas a classe não tinha esse método, por isso acrescentei `descontoEstudante()` ao `Carrinho.php`. As idades 17, 18, 21, 25 e 26 são testadas com um Data Provider.
 
----
+### P5.2 - Exceções
 
-## P5.1 — Primeiros testes
+Testei que o `adicionar` lança `InvalidArgumentException` com quantidade 0, quantidade 21, preço negativo e preço 0. Em dois desses testes também verifico a mensagem de erro com `expectExceptionMessage`.
 
-Testes à classe `Carrinho`, seguindo o padrão **AAA** (Arrange, Act, Assert), com `setUp()` para cada teste começar com um carrinho novo e `assertSame` por omissão.
+### P5.3 - TDD
 
-| Teste | O que verifica |
-| --- | --- |
-| `testTotal_CarrinhoVazio_DevolveZero` | Carrinho vazio tem total 0 |
-| `testTotal_ComUmArtigo_DevolvePrecoVezesQuantidade` | 10 × 2 = 20 |
-| `testTotal_ComDoisArtigos_DevolveSomaDosArtigos` | (10 × 2) + (5 × 1) = 25 |
-| `testTotal_ComTresArtigos_DevolveSomaDosArtigos` | (10 × 2) + (5 × 1) + (3 × 4) = 37 |
-| `testNumeroDeArtigos_ComDoisArtigos_DevolveDois` | Dois artigos adicionados = 2 |
-| `testNumeroDeArtigos_ComQuantidadeCinco_DevolveUm` | A quantidade não conta como artigos |
-| `testVazio_CarrinhoNovo_DevolveTrue` | Carrinho novo está vazio |
-| `testVazio_ComUmArtigo_DevolveFalse` | Com um artigo já não está vazio |
-| `testAdicionar_QuantidadeVinte_EhAceite` | Valor-limite: quantidade 20 é aceite |
-| `testDescontoEstudante_PorIdade_DevolveDescontoCorreto` | Data Provider com 5 idades: 17, 18, 21, 25 e 26 |
+Criei a classe `ValidadorPasse` escrevendo os testes primeiro. A palavra-passe tem de ter pelo menos 8 caracteres, uma maiúscula e um dígito.
 
-O desconto de estudante (10% entre os 18 e os 25 anos, inclusive) foi acrescentado à classe `Carrinho` para cumprir o enunciado da aula. Os valores-limite 18 e 25 são testados com um **Data Provider**.
+Fui um requisito de cada vez: primeiro o tamanho, depois a maiúscula, depois o dígito. Em cada passo o teste novo falhava e só depois escrevia o código para passar. No fim fiz um pequeno refactor (o 8 passou a constante) e os testes continuaram verdes.
 
----
+Os casos de 7, 8 e 9 caracteres estão num Data Provider, porque são os valores-limite do tamanho.
 
-## P5.2 — Testar exceções
+## Ficheiros
 
-O método `adicionar` tem de recusar entradas inválidas com `InvalidArgumentException`.
-
-| Teste | O que verifica |
-| --- | --- |
-| `testAdicionar_QuantidadeZero_LancaExcecao` | Quantidade 0 é recusada |
-| `testAdicionar_QuantidadeAcimaDeVinte_LancaExcecaoComMensagem` | Quantidade 21 é recusada, com verificação da mensagem |
-| `testAdicionar_PrecoNegativo_LancaExcecaoComMensagem` | Preço negativo é recusado, com verificação da mensagem |
-| `testAdicionar_PrecoZero_LancaExcecao` | Valor-limite: preço 0 também é recusado |
-
----
-
-## P5.3 — Ciclo TDD: validador de palavra-passe
-
-A classe `ValidadorPasse` foi desenvolvida com o teste escrito **antes** do código. Uma palavra-passe é válida quando tem, ao mesmo tempo:
-
-1. no mínimo 8 caracteres;
-2. pelo menos uma letra maiúscula;
-3. pelo menos um dígito.
-
-**Como decorreu o ciclo:**
-
-| Fase | O que foi feito | Resultado |
-| --- | --- | --- |
-| 🔴 Vermelho | Testes dos requisitos escritos sem o código correspondente | Testes a falhar |
-| 🟢 Verde 1 | Verificação do tamanho mínimo | Requisito 1 a passar |
-| 🟢 Verde 2 | Verificação da letra maiúscula | Requisitos 1 e 2 a passar |
-| 🟢 Verde 3 | Verificação do dígito | Todos a passar |
-| 🔵 Refactor | Tamanho mínimo passou a constante e cada regra ficou comentada | Todos continuam a passar |
-
-| Teste | O que verifica |
-| --- | --- |
-| `testValida_PasseCurta_DevolveFalse` | `'Ab1'` é inválida (curta) |
-| `testValida_SemMaiuscula_DevolveFalse` | `'abcdefg1'` é inválida (sem maiúscula) |
-| `testValida_SemDigito_DevolveFalse` | `'Abcdefgh'` é inválida (sem dígito) |
-| `testValida_CumpreTodasAsRegras_DevolveTrue` | `'Segura2026'` é válida |
-| `testValida_TamanhoNaFronteira_DevolveResultadoCorreto` | Data Provider: 7 caracteres inválida, 8 e 9 válidas |
-
----
-
-## Boas práticas aplicadas
-
-- **Princípios FIRST:** testes rápidos, isolados (`setUp()`), repetíveis e autovalidáveis.
-- **Padrão AAA** em todos os testes.
-- **Nomes descritivos** no formato `testOQueSeTesta_Condicao_ResultadoEsperado`.
-- **`assertSame` por omissão**, para comparar valor e tipo.
-- **Três tipos de caso:** nominais, de fronteira e de erro.
-- **Data Providers** para testar vários valores-limite com um só teste.
+- `src/Carrinho.php` - classe do carrinho
+- `src/ValidadorPasse.php` - validador de palavra-passe
+- `tests/CarrinhoTest.php` - testes do P5.1 e P5.2
+- `tests/ValidadorPasseTest.php` - testes do P5.3
