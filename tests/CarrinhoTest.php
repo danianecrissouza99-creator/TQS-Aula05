@@ -29,14 +29,12 @@ class CarrinhoTest extends TestCase
     // P5.1  Primeiros testes
     // ================================================================
 
-    // Carrinho vazio -> total 0.
-    public function testTotal_CarrinhoVazio_DevolveZero(): void
+    // Ponto de partida do slide P5.1: carrinho vazio -> total 0.
+    // (escrito tal como no slide, criando o carrinho dentro do teste)
+    public function testTotalVazioEhZero(): void
     {
-        // Arrange: feito no setUp()
-
-        $total = $this->carrinho->total();                    // Act
-
-        $this->assertSame(0, $total);                         // Assert
+        $carrinho = new Carrinho();                           // Arrange
+        $this->assertSame(0, $carrinho->total());             // Act + Assert
     }
 
     // Um artigo: 10 x 2 = 20.
@@ -155,12 +153,13 @@ class CarrinhoTest extends TestCase
     // Ordem: primeiro expectException, só depois a chamada que dá erro.
     // ================================================================
 
-    // Quantidade 0 (abaixo do mínimo) -> exceção.
-    public function testAdicionar_QuantidadeZero_LancaExcecao(): void
+    // Exemplo do slide P5.2 "Verificar que a exceção ocorre":
+    // quantidade 0 (abaixo do mínimo) -> exceção.
+    public function testQtZeroLevantaErro(): void
     {
+        $c = new Carrinho();
         $this->expectException(InvalidArgumentException::class);
-
-        $this->carrinho->adicionar('A', 10, 0);
+        $c->adicionar('A', 10, 0);
     }
 
     // Quantidade 21 (acima do máximo) -> exceção, com verificação da mensagem.
@@ -187,5 +186,16 @@ class CarrinhoTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $this->carrinho->adicionar('A', 0, 1);
+    }
+
+    // Exemplo do slide P5.2 "Verificar também a mensagem":
+    // quantidade 0 -> a mensagem tem de falar da quantidade.
+    // O expectExceptionMessage aceita só parte do texto.
+    public function testMensagemDoErro(): void
+    {
+        $c = new Carrinho();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('quantidade');
+        $c->adicionar('A', 10, 0);
     }
 }
