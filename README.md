@@ -1,108 +1,122 @@
-# Exercícios da Aula 5 — Testes Unitários com PHP
+# TQS · Aula 5 — Testes Unitários com PHP
 
-Projeto base para os exercícios práticos. Todos abrem este mesmo projeto e trabalham sobre ele.
+Exercícios práticos da Aula 5 da unidade curricular **Testes e Qualidade de Software** (ISTEC · CTeSP em Desenvolvimento de Software · 2.º ano).
 
-O objetivo da aula é escrever a vossa primeira suite de testes com o PHPUnit. No fim, deves ter pelo menos **12 testes a passar**.
+O objetivo foi escrever uma suite de testes unitários com o **PHPUnit**, testar exceções e desenvolver uma classe nova com o ciclo **TDD** (vermelho, verde, refactor).
 
-## O que está dentro
+**Resultado final:** 25 testes a passar · `OK (25 tests, 27 assertions)`
+
+---
+
+## Autora
+
+- **Nome:** Daniane Christyni Souza da Silva
+- **N.º de aluna:** 2025055
+- **Docente:** André Silva
+
+---
+
+## Estrutura do projeto
 
 ```
-src/     o código a testar (a classe Carrinho)
-tests/   onde vais escrever os teus testes
+src/
+  Carrinho.php            classe Carrinho (total, artigos, vazio, desconto de estudante)
+  ValidadorPasse.php      classe criada em TDD (exercício P5.3)
+tests/
+  CarrinhoTest.php        testes dos exercícios P5.1 e P5.2
+  ValidadorPasseTest.php  testes do exercício P5.3
 ```
 
-## Preparar o ambiente (uma vez)
-
-1. Abre a pasta do projeto no VS Code (Ficheiro, Abrir Pasta).
-2. Abre o terminal integrado (menu Terminal, Novo Terminal).
-3. Dentro da pasta do projeto, instala o PHPUnit (é um ficheiro só):
-
-```
-php -r "copy('https://phar.phpunit.de/phpunit-11.phar', 'phpunit');"
-php phpunit --version
-```
-
-Se o segundo comando mostrar a versão, o PHPUnit está pronto.
+---
 
 ## Como correr os testes
 
-```
-php phpunit tests              correr todos os testes
-php phpunit --testdox          mostrar cada teste como uma frase
-```
+1. Instalar o PHPUnit dentro da pasta do projeto (é um ficheiro só):
 
-No resultado, cada **ponto (.)** é um teste que passou e cada **F** é um teste que falhou. Por baixo de um F, o PHPUnit explica o que esperava e o que obteve.
+   ```
+   php -r "copy('https://phar.phpunit.de/phpunit-11.phar', 'phpunit');"
+   php phpunit --version
+   ```
 
----
+2. Correr os testes:
 
-## P5.1 — Primeiros testes (45 min)
+   ```
+   php phpunit tests                 # todos os testes
+   php phpunit --testdox tests       # cada teste mostrado como uma frase
+   php phpunit tests/CarrinhoTest.php
+   ```
 
-Abre `tests/CarrinhoTest.php`. Já lá está o primeiro teste feito, como exemplo. Escreve os restantes.
-
-**O que fazer:** escrever pelo menos **8 testes** sobre a classe `Carrinho`:
-
-- o total com um, dois e três artigos;
-- o número de artigos no carrinho;
-- o carrinho novo está vazio, e com um artigo já não está;
-- o total de um carrinho vazio é zero (já feito).
-
-**Regras:**
-- cada teste segue o padrão **Arrange, Act, Assert** (preparar, executar, verificar);
-- o nome do teste descreve o que verifica (evita `test1` ou `testCarrinho`);
-- usa `assertSame(esperado, obtido)`.
-
-> Confirma sempre a conta à mão antes de escrever o resultado esperado.
+> O ficheiro `phpunit` não está no repositório (está no `.gitignore`).
 
 ---
 
-## P5.2 — Testar exceções (35 min)
+## P5.1 — Primeiros testes
 
-Ainda no `tests/CarrinhoTest.php`. O método `adicionar` deve recusar entradas inválidas lançando uma exceção.
+Testes à classe `Carrinho`, seguindo o padrão **AAA** (Arrange, Act, Assert), com `setUp()` para cada teste começar com um carrinho novo e `assertSame` por omissão.
 
-**O que fazer:** escrever testes que confirmem que:
+| Teste | O que verifica |
+| --- | --- |
+| `testTotal_CarrinhoVazio_DevolveZero` | Carrinho vazio tem total 0 |
+| `testTotal_ComUmArtigo_DevolvePrecoVezesQuantidade` | 10 × 2 = 20 |
+| `testTotal_ComDoisArtigos_DevolveSomaDosArtigos` | (10 × 2) + (5 × 1) = 25 |
+| `testTotal_ComTresArtigos_DevolveSomaDosArtigos` | (10 × 2) + (5 × 1) + (3 × 4) = 37 |
+| `testNumeroDeArtigos_ComDoisArtigos_DevolveDois` | Dois artigos adicionados = 2 |
+| `testNumeroDeArtigos_ComQuantidadeCinco_DevolveUm` | A quantidade não conta como artigos |
+| `testVazio_CarrinhoNovo_DevolveTrue` | Carrinho novo está vazio |
+| `testVazio_ComUmArtigo_DevolveFalse` | Com um artigo já não está vazio |
+| `testAdicionar_QuantidadeVinte_EhAceite` | Valor-limite: quantidade 20 é aceite |
+| `testDescontoEstudante_PorIdade_DevolveDescontoCorreto` | Data Provider com 5 idades: 17, 18, 21, 25 e 26 |
 
-- quantidade **zero** lança `InvalidArgumentException`;
-- quantidade **acima de 20** lança exceção;
-- preço **negativo** lança exceção;
-- usa `expectExceptionMessage` para verificar a mensagem em pelo menos um deles.
-
-**Como se escreve:**
-
-```php
-public function testQtZeroLevantaErro(): void
-{
-    $this->expectException(InvalidArgumentException::class);
-    $this->carrinho->adicionar('A', 10, 0);
-}
-```
-
-> Atenção à ordem: primeiro `expectException`, só **depois** a chamada que deve dar erro.
+O desconto de estudante (10% entre os 18 e os 25 anos, inclusive) foi acrescentado à classe `Carrinho` para cumprir o enunciado da aula. Os valores-limite 18 e 25 são testados com um **Data Provider**.
 
 ---
 
-## P5.3 — Ciclo TDD: validador de palavra-passe (40 min)
+## P5.2 — Testar exceções
 
-Aqui trabalhas ao contrário: escreves o **teste primeiro**, vê-lo falhar (vermelho), e só depois escreves o código para ele passar (verde).
+O método `adicionar` tem de recusar entradas inválidas com `InvalidArgumentException`.
 
-Abre `tests/ValidadorPasseTest.php`, que tem as instruções passo a passo.
-
-**O que fazer:** criar a classe `ValidadorPasse` (em `src/ValidadorPasse.php`) com um método `valida(string $passe): bool`. Uma palavra-passe é válida quando, ao mesmo tempo:
-
-1. tem no mínimo **8 caracteres**;
-2. tem pelo menos uma **letra maiúscula**;
-3. tem pelo menos um **dígito**.
-
-**Faz um requisito de cada vez:**
-1. escreve um teste para o requisito 1 e vê-lo falhar;
-2. cria o código mínimo para passar;
-3. só então avança para o requisito seguinte.
+| Teste | O que verifica |
+| --- | --- |
+| `testAdicionar_QuantidadeZero_LancaExcecao` | Quantidade 0 é recusada |
+| `testAdicionar_QuantidadeAcimaDeVinte_LancaExcecaoComMensagem` | Quantidade 21 é recusada, com verificação da mensagem |
+| `testAdicionar_PrecoNegativo_LancaExcecaoComMensagem` | Preço negativo é recusado, com verificação da mensagem |
+| `testAdicionar_PrecoZero_LancaExcecao` | Valor-limite: preço 0 também é recusado |
 
 ---
 
-## Entrega
+## P5.3 — Ciclo TDD: validador de palavra-passe
 
-- Confirma que **todos os testes passam** com `php phpunit --testdox`.
-- Guarda o projeto no Git e envia para o GitHub.
-- Entrega o link do repositório ao docente.
+A classe `ValidadorPasse` foi desenvolvida com o teste escrito **antes** do código. Uma palavra-passe é válida quando tem, ao mesmo tempo:
 
-> O ficheiro `phpunit` não deve ir para o GitHub (o `.gitignore` já trata disso).
+1. no mínimo 8 caracteres;
+2. pelo menos uma letra maiúscula;
+3. pelo menos um dígito.
+
+**Como decorreu o ciclo:**
+
+| Fase | O que foi feito | Resultado |
+| --- | --- | --- |
+| 🔴 Vermelho | Testes dos requisitos escritos sem o código correspondente | Testes a falhar |
+| 🟢 Verde 1 | Verificação do tamanho mínimo | Requisito 1 a passar |
+| 🟢 Verde 2 | Verificação da letra maiúscula | Requisitos 1 e 2 a passar |
+| 🟢 Verde 3 | Verificação do dígito | Todos a passar |
+| 🔵 Refactor | Tamanho mínimo passou a constante e cada regra ficou comentada | Todos continuam a passar |
+
+| Teste | O que verifica |
+| --- | --- |
+| `testValida_PasseCurta_DevolveFalse` | `'Ab1'` é inválida (curta) |
+| `testValida_SemMaiuscula_DevolveFalse` | `'abcdefg1'` é inválida (sem maiúscula) |
+| `testValida_SemDigito_DevolveFalse` | `'Abcdefgh'` é inválida (sem dígito) |
+| `testValida_CumpreTodasAsRegras_DevolveTrue` | `'Segura2026'` é válida |
+| `testValida_TamanhoNaFronteira_DevolveResultadoCorreto` | Data Provider: 7 caracteres inválida, 8 e 9 válidas |
+
+---
+
+## Boas práticas aplicadas
+
+- **Princípios FIRST:** testes rápidos, isolados (`setUp()`), repetíveis e autovalidáveis.
+- **Padrão AAA** em todos os testes.
+- **Nomes descritivos** no formato `testOQueSeTesta_Condicao_ResultadoEsperado`.
+- **`assertSame` por omissão**, para comparar valor e tipo.
+- **Três tipos de caso:** nominais, de fronteira e de erro.
+- **Data Providers** para testar vários valores-limite com um só teste.
